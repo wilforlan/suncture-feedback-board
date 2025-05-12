@@ -1,6 +1,7 @@
-import { createServerSupabaseClient } from "./supabase/server"
 import { supabase as clientSupabase } from "./supabase/client"
 import type { Feedback, FeedbackStatus } from "./types"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import type { Database } from "@/lib/supabase/database.types"
 
 // Mock data for fallback when Supabase is not available
 const mockFeedbackData: Feedback[] = [
@@ -54,7 +55,7 @@ const mockFeedbackData: Feedback[] = [
 // Get all feedback entries
 export async function getAllFeedback(): Promise<Feedback[]> {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createClientComponentClient()
 
     if (!supabase) {
       console.error("Supabase client not available")
@@ -78,7 +79,7 @@ export async function getAllFeedback(): Promise<Feedback[]> {
 // Get feedback entries by status
 export async function getFeedbackByStatus(): Promise<Record<FeedbackStatus, Feedback[]>> {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createClientComponentClient()
 
     if (!supabase) {
       console.error("Supabase client not available")
@@ -119,7 +120,7 @@ export async function getFeedbackByStatus(): Promise<Record<FeedbackStatus, Feed
 // Get a single feedback entry by ID
 export async function getFeedbackById(id: string): Promise<Feedback | null> {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createClientComponentClient()
 
     if (!supabase) {
       console.error("Supabase client not available")
@@ -143,7 +144,7 @@ export async function getFeedbackById(id: string): Promise<Feedback | null> {
 // Get the next serial number
 export async function getNextSerialNumber(): Promise<string> {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createClientComponentClient()
 
     if (!supabase) {
       console.error("Supabase client not available")
@@ -207,8 +208,9 @@ export async function getTopUsersByFeedbackCount(limit = 5): Promise<
     startOfWeek.setDate(now.getDate() - now.getDay()) // Go to the start of the week (Sunday)
     startOfWeek.setHours(0, 0, 0, 0) // Set to midnight
 
+    const supabase = createClientComponentClient<Database>()
     // Query to get feedback counts grouped by user
-    const { data, error } = await clientSupabase
+    const { data, error } = await supabase
       .from("feedback")
       .select("name, email, created_by")
       .gte("created_at", startOfWeek.toISOString())

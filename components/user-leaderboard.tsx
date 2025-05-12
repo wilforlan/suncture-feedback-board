@@ -77,9 +77,9 @@ export async function UserLeaderboard() {
           <CardDescription>Top contributors for this week</CardDescription>
         </CardHeader>
         <CardContent>
-          {hasTopUsers && topUsers.length > 1 ? (
+          {hasTopUsers && topUsers.length > 0 ? (
             <div className="space-y-4">
-              {topUsers.slice(1).map((user, index) => (
+              {topUsers.map((user, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="text-xl w-8 text-center">{rankEmojis[index + 1] || "🔹"}</div>
