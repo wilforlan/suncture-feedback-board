@@ -24,7 +24,6 @@ export function Navbar() {
         <div className="flex items-center justify-between space-between w-full max-w-7xl gap-8">
           <div className="flex">
             <Link href="/" className="flex items-center space-x-2">
-              <LucideClipboardList className="h-6 w-6" />
               <span className="font-bold text-xl">Suncture QA</span>
             </Link>
           </div>

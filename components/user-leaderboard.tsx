@@ -55,7 +55,7 @@ export async function UserLeaderboard() {
                 <div className="bg-white/10 rounded-lg p-4 mt-2">
                   <h4 className="font-bold text-lg mb-2">🎁 Weekly Rewards Up For Grabs!</h4>
                   <p className="mb-4">
-                    This week's top contributor will receive a $50 Amazon gift card and exclusive early access to our
+                    This week's top contributor will receive a reward from Suncture Admins and exclusive early access to our
                     next feature release!
                   </p>
                   <Button asChild variant="secondary" className="w-full">
