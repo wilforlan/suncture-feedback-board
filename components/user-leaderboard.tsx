@@ -9,7 +9,7 @@ const rankEmojis = ["🏆", "🥈", "🥉", "🌟", "✨"]
 
 export async function UserLeaderboard() {
   const topUsers = await getTopUsersByFeedbackCount(5)
-  const hasTopUsers = topUsers.length > 1
+  const hasTopUsers = topUsers.length > 2
 
   return (
     <div className="space-y-8">
