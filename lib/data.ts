@@ -244,7 +244,9 @@ export async function getTopUsersByFeedbackCount(limit = 5): Promise<
     const sortedUsers = Object.values(userCounts)
       .sort((a, b) => b.count - a.count)
       .slice(0, limit)
+      .filter(q => !q.email.includes('undefined'))
 
+      console.log({ sortedUsers })
     return sortedUsers
   } catch (error) {
     console.error("Error in getTopUsersByFeedbackCount:", error)
