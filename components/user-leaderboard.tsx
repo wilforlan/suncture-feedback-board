@@ -33,8 +33,7 @@ export async function UserLeaderboard() {
                 <div className="bg-white/10 rounded-lg p-4 mt-2">
                   <h4 className="font-bold text-lg mb-2">🎁 Weekly Reward Winner!</h4>
                   <p>
-                    Congratulations! You've earned this week's reward: A $50 Amazon gift card and exclusive early access
-                    to our next feature release!
+                    Congratulations! You're earning this week's rewards is you continue to stay up the leaderboard.
                   </p>
                 </div>
               </div>
