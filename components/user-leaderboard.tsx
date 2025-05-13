@@ -3,108 +3,146 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getTopUsersByFeedbackCount } from "@/lib/data"
 import Link from "next/link"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { cn } from "@/lib/utils"
 
 // Ranking emojis for different positions
 const rankEmojis = ["🏆", "🥈", "🥉", "🌟", "✨"]
 
+// Time period labels and their corresponding emojis
+const timePeriods = [
+  { id: "daily", label: "Daily", emoji: "🌅" },
+  { id: "weekly", label: "Weekly", emoji: "📅" },
+  { id: "monthly", label: "Monthly", emoji: "📊" },
+]
+
 export async function UserLeaderboard() {
-  const topUsers = await getTopUsersByFeedbackCount(5)
-  const hasTopUsers = topUsers.length > 2
+  // Fetch data for different time periods
+  const dailyTopUsers = await getTopUsersByFeedbackCount(5, "daily")
+  const weeklyTopUsers = await getTopUsersByFeedbackCount(5, "weekly")
+  const monthlyTopUsers = await getTopUsersByFeedbackCount(5, "monthly")
+
+  // Get the #1 users from each category
+  const topPerformers = [
+    { period: "Daily", user: dailyTopUsers[0] },
+    { period: "Weekly", user: weeklyTopUsers[0] },
+    { period: "Monthly", user: monthlyTopUsers[0] },
+  ].filter(item => item.user)
 
   return (
     <div className="space-y-8">
-      {/* Top User Highlight or Promo */}
-      <div className="bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl p-6 text-white">
-        <div className="flex flex-col items-center text-center">
-          {hasTopUsers ? (
-            // Top user content
-            <>
-              <div className="text-5xl mb-4">👑</div>
-              <h3 className="text-2xl font-bold mb-2">{topUsers[0].name}</h3>
-              <p className="text-white/80 mb-4">{topUsers[0].email}</p>
-              <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-4">
-                {topUsers[0].count} Feedback Submissions This Week
-              </Badge>
-              <div className="max-w-md">
-                <p className="text-lg italic mb-4">
-                  "Thank you for your outstanding contributions to improving the Suncture Platform! Your detailed
-                  feedback has been invaluable in helping us identify and fix issues."
-                </p>
-                <div className="bg-white/10 rounded-lg p-4 mt-2">
-                  <h4 className="font-bold text-lg mb-2">🎁 Weekly Reward Winner!</h4>
-                  <p>
-                    Congratulations! You're earning this week's rewards is you continue to stay up the leaderboard.
-                  </p>
+      {/* Top Performers Carousel */}
+      <div className="relative">
+        <h2 className="text-2xl font-bold mb-4">Top Performers</h2>
+        <Carousel className="w-full">
+          <CarouselContent>
+            {topPerformers.map((performer, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                <div className="bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl p-6 text-white h-full">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="text-5xl mb-4">👑</div>
+                    <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-2">
+                      {performer.period} Champion
+                    </Badge>
+                    <h3 className="text-2xl font-bold mb-2">{performer.user.name}</h3>
+                    <p className="text-white/80 mb-4">{performer.user.email}</p>
+                    <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-4">
+                      {performer.user.count} Feedback Submissions
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            // Promotional content when no top users
-            <>
-              <div className="text-5xl mb-4">🏆</div>
-              <h3 className="text-2xl font-bold mb-2">This Week's Top Spot Is Waiting For You!</h3>
-              <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-4">
-                Be The First To Submit Feedback
-              </Badge>
-              <div className="max-w-md">
-                <p className="text-lg mb-4">
-                  Submit quality feedback this week and claim the top spot on our leaderboard. We're looking for
-                  detailed bug reports and thoughtful suggestions to improve the Suncture Platform.
-                </p>
-                <div className="bg-white/10 rounded-lg p-4 mt-2">
-                  <h4 className="font-bold text-lg mb-2">🎁 Weekly Rewards Up For Grabs!</h4>
-                  <p className="mb-4">
-                    This week's top contributor will receive a reward from Suncture Admins and exclusive early access to our
-                    next feature release!
-                  </p>
-                  <Button asChild variant="secondary" className="w-full">
-                    <Link href="/feedback/new">Submit Feedback Now</Link>
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
+        </Carousel>
       </div>
 
-      {/* Weekly Leaderboard */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span className="text-xl">📊</span> Weekly Leaderboard
-          </CardTitle>
-          <CardDescription>Top contributors for this week</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {hasTopUsers && topUsers.length > 0 ? (
-            <div className="space-y-4">
-              {topUsers.map((user, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-xl w-8 text-center">{rankEmojis[index + 1] || "🔹"}</div>
-                    <div>
-                      <p className="font-medium">{user.name}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="ml-auto">
-                    {user.count} submissions
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                No feedback submissions yet this week. Be the first to contribute!
-              </p>
-              <Button asChild>
-                <Link href="/feedback/new">Submit Feedback</Link>
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Time Period Tabs */}
+      <Tabs defaultValue="weekly" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          {timePeriods.map((period) => (
+            <TabsTrigger key={period.id} value={period.id} className="flex items-center gap-2">
+              <span>{period.emoji}</span>
+              <span>{period.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {/* Daily Leaderboard */}
+        <TabsContent value="daily">
+          <LeaderboardCard
+            title="Daily Leaderboard"
+            description="Top contributors for today"
+            users={dailyTopUsers}
+          />
+        </TabsContent>
+
+        {/* Weekly Leaderboard */}
+        <TabsContent value="weekly">
+          <LeaderboardCard
+            title="Weekly Leaderboard"
+            description="Top contributors for this week"
+            users={weeklyTopUsers}
+          />
+        </TabsContent>
+
+        {/* Monthly Leaderboard */}
+        <TabsContent value="monthly">
+          <LeaderboardCard
+            title="Monthly Leaderboard"
+            description="Top contributors for this month"
+            users={monthlyTopUsers}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
+  )
+}
+
+// Separate component for the leaderboard card
+function LeaderboardCard({ title, description, users }: { title: string; description: string; users: any[] }) {
+  const hasUsers = users.length > 0
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-xl">📊</span> {title}
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {hasUsers ? (
+          <div className="space-y-4">
+            {users.map((user, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-xl w-8 text-center">{rankEmojis[index] || "🔹"}</div>
+                  <div>
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="ml-auto">
+                  {user.count} submissions
+                </Badge>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">
+              No feedback submissions yet. Be the first to contribute!
+            </p>
+            <Button asChild>
+              <Link href="/feedback/new">Submit Feedback</Link>
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

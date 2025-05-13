@@ -193,8 +193,11 @@ export async function updateFeedbackStatus(id: string, status: FeedbackStatus): 
   }
 }
 
-// Get top users by feedback count for the current week
-export async function getTopUsersByFeedbackCount(limit = 5): Promise<
+// Get top users by feedback count for different time periods
+export async function getTopUsersByFeedbackCount(
+  limit = 5,
+  period: 'daily' | 'weekly' | 'monthly' = 'weekly'
+): Promise<
   {
     name: string
     email: string
@@ -202,18 +205,30 @@ export async function getTopUsersByFeedbackCount(limit = 5): Promise<
   }[]
 > {
   try {
-    // Get the start of the current week (Sunday)
     const now = new Date()
-    const startOfWeek = new Date(now)
-    startOfWeek.setDate(now.getDate() - now.getDay()) // Go to the start of the week (Sunday)
-    startOfWeek.setHours(0, 0, 0, 0) // Set to midnight
+    let startDate = new Date(now)
+
+    // Set the start date based on the period
+    switch (period) {
+      case 'daily':
+        startDate.setHours(0, 0, 0, 0)
+        break
+      case 'weekly':
+        startDate.setDate(now.getDate() - now.getDay()) // Go to the start of the week (Sunday)
+        startDate.setHours(0, 0, 0, 0)
+        break
+      case 'monthly':
+        startDate.setDate(1) // Go to the start of the month
+        startDate.setHours(0, 0, 0, 0)
+        break
+    }
 
     const supabase = createClientComponentClient<Database>()
     // Query to get feedback counts grouped by user
     const { data, error } = await supabase
       .from("feedback")
       .select("name, email, created_by")
-      .gte("created_at", startOfWeek.toISOString())
+      .gte("created_at", startDate.toISOString())
       .not("created_by", "is", null)
 
     if (error) {
@@ -246,7 +261,6 @@ export async function getTopUsersByFeedbackCount(limit = 5): Promise<
       .slice(0, limit)
       .filter(q => !q.email.includes('undefined'))
 
-      console.log({ sortedUsers })
     return sortedUsers
   } catch (error) {
     console.error("Error in getTopUsersByFeedbackCount:", error)
