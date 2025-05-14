@@ -1,56 +1,6 @@
-import { supabase as clientSupabase } from "./supabase/client"
 import type { Feedback, FeedbackStatus } from "./types"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import type { Database } from "@/lib/supabase/database.types"
-
-// Mock data for fallback when Supabase is not available
-const mockFeedbackData: Feedback[] = [
-  {
-    id: "feedback_1",
-    serial_number: "BUG-001",
-    defect_description: "Login button unresponsive on mobile devices",
-    precondition: "User is on the login page using a mobile device",
-    steps_to_recreate: "1. Navigate to login page\n2. Enter valid credentials\n3. Tap the login button",
-    expected_result: "User should be logged in and redirected to dashboard",
-    actual_result: "Button animation plays but no login action occurs",
-    severity: "High",
-    testing_device: "Mobile",
-    screenshot_url: "/placeholder.svg?height=300&width=400",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone_number: "+1234567890",
-    profession: "QA Engineer",
-    location: "New York, USA",
-    most_useful_feature: "Dashboard Analytics",
-    chatbot_rating: 4,
-    status: "open",
-    created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-    created_by: "user_123",
-  },
-  {
-    id: "feedback_2",
-    serial_number: "BUG-002",
-    defect_description: "Data visualization chart not rendering correctly on Firefox",
-    precondition: "User is logged in and viewing the analytics page on Firefox browser",
-    steps_to_recreate:
-      "1. Login to the platform\n2. Navigate to Analytics section\n3. View the monthly performance chart",
-    expected_result: "Chart should display all data points with proper labels",
-    actual_result: "Chart renders but labels are misaligned and some data points are missing",
-    severity: "Medium",
-    testing_device: "Desktop",
-    screenshot_url: "/placeholder.svg?height=300&width=400",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone_number: "+1987654321",
-    profession: "UX Tester",
-    location: "London, UK",
-    most_useful_feature: "Report Generation",
-    chatbot_rating: 3,
-    status: "in_review",
-    created_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-    created_by: "user_456",
-  },
-]
 
 // Get all feedback entries
 export async function getAllFeedback(): Promise<Feedback[]> {
@@ -179,7 +129,8 @@ export async function getNextSerialNumber(): Promise<string> {
 // Update feedback status (client-side)
 export async function updateFeedbackStatus(id: string, status: FeedbackStatus): Promise<boolean> {
   try {
-    const { error } = await clientSupabase.from("feedback").update({ status }).eq("id", id)
+    const supabase = createClientComponentClient<Database>()
+    const { error } = await supabase.from("feedback").update({ status }).eq("id", id)
 
     if (error) {
       console.error("Error updating feedback status:", error)
