@@ -1,6 +1,6 @@
 export type Severity = "Low" | "Medium" | "High" | "Critical"
 export type TestingDevice = "Mobile" | "Desktop" | "Tablet" | "Other"
-export type FeedbackStatus = "open" | "in_review" | "done"
+export type FeedbackStatus = "open" | "in_review" | "done" | "needs_refix"
 
 export type Feedback = {
   id: string
@@ -27,8 +27,19 @@ export type Feedback = {
   status: FeedbackStatus
   created_at: string
   created_by?: string | null
+  refix_count?: number
+  parent_serial_number?: string
 }
 
 export type FeedbackFormData = Omit<Feedback, "id" | "created_at" | "status"> & {
   screenshot?: File | null
+}
+
+export type FeedbackComment = {
+  id: string
+  feedback_id: string
+  content: string
+  user_id: string
+  user_email: string
+  created_at: string
 }

@@ -33,20 +33,21 @@ export async function getFeedbackByStatus(): Promise<Record<FeedbackStatus, Feed
 
     if (!supabase) {
       console.error("Supabase client not available")
-      return { open: [], in_review: [], done: [] }
+      return { open: [], in_review: [], done: [], needs_refix: [] }
     }
 
     const { data, error } = await supabase.from("feedback").select("*").order("created_at", { ascending: false })
 
     if (error) {
       console.error("Error fetching feedback:", error)
-      return { open: [], in_review: [], done: [] }
+      return { open: [], in_review: [], done: [], needs_refix: [] }
     }
 
     const feedbackByStatus: Record<FeedbackStatus, Feedback[]> = {
       open: [],
       in_review: [],
       done: [],
+      needs_refix: []
     }
 
     if (data && data.length > 0) {
@@ -63,7 +64,7 @@ export async function getFeedbackByStatus(): Promise<Record<FeedbackStatus, Feed
     return feedbackByStatus
   } catch (error) {
     console.error("Error in getFeedbackByStatus:", error)
-    return { open: [], in_review: [], done: [] }
+    return { open: [], in_review: [], done: [], needs_refix: [] }
   }
 }
 
@@ -133,6 +134,7 @@ export async function updateFeedbackStatus(id: string, status: FeedbackStatus): 
     const { error } = await supabase.from("feedback").update({ status }).eq("id", id)
 
     if (error) {
+      console.log({ error })
       console.error("Error updating feedback status:", error)
       return false
     }

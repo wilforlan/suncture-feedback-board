@@ -75,6 +75,7 @@ async function submitFeedbackClient(formData: any) {
         location: formData.location,
         most_useful_feature: formData.most_useful_feature,
         chatbot_rating: formData.chatbot_rating,
+        parent_serial_number: formData.parent_serial_number,
 
         created_by: user.id,
         status: "open",
@@ -115,6 +116,7 @@ export function FeedbackForm() {
   const [actualResult, setActualResult] = useState("")
   const [severity, setSeverity] = useState<Severity>("Medium")
   const [testingDevice, setTestingDevice] = useState<TestingDevice>("Desktop")
+  const [parentSerialNumber, setParentSerialNumber] = useState("")
 
   // User information
   const [name, setName] = useState(user?.user_metadata?.name || "")
@@ -164,6 +166,8 @@ export function FeedbackForm() {
         location,
         most_useful_feature: mostUsefulFeature,
         chatbot_rating: chatbotRating,
+        parent_serial_number: parentSerialNumber,
+        serial_number: "TEMP-CLIENT",
       }
 
       // Try to import the server action
@@ -197,6 +201,7 @@ export function FeedbackForm() {
         setLocation("")
         setMostUsefulFeature("")
         setChatbotRating(3)
+        setParentSerialNumber("")
 
         // Redirect to the feedback detail page if ID is available
         if (result.id) {
@@ -294,6 +299,15 @@ export function FeedbackForm() {
                   onChange={(e) => setDefectDescription(e.target.value)}
                   required
                   rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="parentSerialNumber">Parent Serial Number (if this is a refix or related issue)</Label>
+                <Input
+                  id="parentSerialNumber"
+                  placeholder="e.g. BUG-001 (optional)"
+                  value={parentSerialNumber}
+                  onChange={(e) => setParentSerialNumber(e.target.value)}
                 />
               </div>
 

@@ -1,5 +1,5 @@
 -- Create feedback status enum
-CREATE TYPE feedback_status AS ENUM ('open', 'in_review', 'done');
+CREATE TYPE feedback_status AS ENUM ('open', 'in_review', 'done', 'needs_refix');
 
 -- Create feedback table
 CREATE TABLE feedback (

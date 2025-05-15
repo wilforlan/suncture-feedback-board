@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { LucideArrowLeft } from "lucide-react"
+import { LucideArrowLeft, LucideLink, LucideMessageSquare } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import { FeedbackActions } from "@/components/feedback-actions"
 
 export default async function FeedbackDetailPage({
   params,
@@ -29,7 +30,7 @@ export default async function FeedbackDetailPage({
       </Button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 space-y-6">
           <Card className="overflow-hidden">
             <div className="bg-gradient-to-r from-blue-500 to-teal-400 h-2" />
             <CardHeader>
@@ -69,6 +70,19 @@ export default async function FeedbackDetailPage({
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {feedback.parent_serial_number && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <LucideLink className="h-4 w-4" />
+                  <span>Related to:</span>
+                  <Link
+                    href={`/feedback/${feedback.parent_serial_number}`}
+                    className="text-primary hover:underline"
+                  >
+                    {feedback.parent_serial_number}
+                  </Link>
+                </div>
+              )}
+
               <div>
                 <h3 className="font-semibold text-lg mb-2">Defect Description</h3>
                 <p className="text-slate-700 dark:text-slate-300">{feedback.defect_description}</p>
@@ -116,11 +130,22 @@ export default async function FeedbackDetailPage({
                   </div>
                 </div>
               )}
+
+              <div className="pt-6 border-t">
+                <div className="flex items-center gap-2 mb-4">
+                  <LucideMessageSquare className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Comments & Status Updates</h3>
+                </div>
+                <FeedbackActions
+                  feedbackId={feedback.id}
+                  currentStatus={feedback.status}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <div>
+        <div className="space-y-6">
           <Card>
             <div className="bg-gradient-to-r from-blue-500 to-teal-400 h-2" />
             <CardHeader>

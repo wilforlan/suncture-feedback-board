@@ -36,18 +36,18 @@ function KanbanColumn({ title, feedbackItems, status, onDrop, isProcessing }: Ka
         <h3 className="font-medium flex items-center gap-2">
           {title}
           <Badge variant="outline" className="ml-2">
-            {feedbackItems.length}
+            {feedbackItems?.length}
           </Badge>
         </h3>
       </div>
       <div className="flex-1 overflow-y-auto p-2 bg-muted/50 rounded-b-lg">
-        {feedbackItems.length === 0 ? (
+        {feedbackItems?.length === 0 ? (
           <div className="flex items-center justify-center h-24 text-muted-foreground text-sm border border-dashed rounded-md">
             No items
           </div>
         ) : (
           <div className="space-y-2">
-            {feedbackItems.map((feedback) => (
+            {feedbackItems?.map((feedback) => (
               <div
                 key={feedback.id}
                 draggable
@@ -60,7 +60,12 @@ function KanbanColumn({ title, feedbackItems, status, onDrop, isProcessing }: Ka
                   <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="p-3 pb-0">
                       <div className="flex justify-between items-start">
-                        <CardTitle className="text-sm font-medium">{feedback.serial_number}</CardTitle>
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          {feedback.serial_number}
+                          {typeof feedback.refix_count === 'number' && feedback.refix_count > 0 && (
+                            <Badge variant="secondary" className="ml-2">Refix: {feedback.refix_count}</Badge>
+                          )}
+                        </CardTitle>
                         <Badge
                           variant={
                             feedback.severity === "Critical"
@@ -141,11 +146,23 @@ export function KanbanBoard({ initialFeedback }: KanbanBoardProps) {
     setFeedbackByStatus((prev) => {
       const newFeedbackByStatus = { ...prev }
 
+      // Ensure arrays are initialized
+      if (!newFeedbackByStatus[currentStatus!]) {
+        newFeedbackByStatus[currentStatus!] = []
+      }
+      if (!newFeedbackByStatus[newStatus]) {
+        newFeedbackByStatus[newStatus] = []
+      }
+
       // Remove from current status
       newFeedbackByStatus[currentStatus!] = newFeedbackByStatus[currentStatus!].filter((item) => item.id !== id)
 
-      // Add to new status
-      newFeedbackByStatus[newStatus] = [{ ...feedbackItem!, status: newStatus }, ...newFeedbackByStatus[newStatus]]
+      // Add to new status, increment refix_count if moving to needs_refix
+      let updatedItem = { ...feedbackItem!, status: newStatus }
+      if (newStatus === 'needs_refix') {
+        updatedItem.refix_count = (updatedItem.refix_count || 0) + 1
+      }
+      newFeedbackByStatus[newStatus] = [updatedItem, ...(newFeedbackByStatus[newStatus] || [])]
 
       return newFeedbackByStatus
     })
@@ -167,13 +184,21 @@ export function KanbanBoard({ initialFeedback }: KanbanBoardProps) {
       setFeedbackByStatus((prev) => {
         const newFeedbackByStatus = { ...prev }
 
+        // Ensure arrays are initialized
+        if (!newFeedbackByStatus[currentStatus!]) {
+          newFeedbackByStatus[currentStatus!] = []
+        }
+        if (!newFeedbackByStatus[newStatus]) {
+          newFeedbackByStatus[newStatus] = []
+        }
+
         // Remove from new status
         newFeedbackByStatus[newStatus] = newFeedbackByStatus[newStatus].filter((item) => item.id !== id)
 
         // Add back to original status
         newFeedbackByStatus[currentStatus!] = [
           { ...feedbackItem!, status: currentStatus! },
-          ...newFeedbackByStatus[currentStatus!],
+          ...(newFeedbackByStatus[currentStatus!] || []),
         ]
 
         return newFeedbackByStatus
@@ -191,7 +216,7 @@ export function KanbanBoard({ initialFeedback }: KanbanBoardProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-12rem)]">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[calc(100vh-12rem)]">
       <KanbanColumn
         title="Open"
         feedbackItems={feedbackByStatus.open}
@@ -210,6 +235,13 @@ export function KanbanBoard({ initialFeedback }: KanbanBoardProps) {
         title="Done"
         feedbackItems={feedbackByStatus.done}
         status="done"
+        onDrop={handleDrop}
+        isProcessing={isProcessing}
+      />
+      <KanbanColumn
+        title="Needs Refix"
+        feedbackItems={feedbackByStatus.needs_refix}
+        status="needs_refix"
         onDrop={handleDrop}
         isProcessing={isProcessing}
       />
