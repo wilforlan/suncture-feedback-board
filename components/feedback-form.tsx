@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
@@ -13,9 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase/client"
-import type { Severity, TestingDevice } from "@/lib/types"
+import type { Severity, TestingDevice, Feedback } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LucideAlertCircle, LucideCheck, LucideLoader2 } from "lucide-react"
+import { LucideAlertCircle, LucideCheck, LucideLoader2, LucideChevronsUpDown } from "lucide-react"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { getAllFeedback } from "@/lib/data"
 
 // Fallback implementation for Pages Router
 async function submitFeedbackClient(formData: any) {
@@ -126,6 +130,25 @@ export function FeedbackForm() {
   const [location, setLocation] = useState("")
   const [mostUsefulFeature, setMostUsefulFeature] = useState("")
   const [chatbotRating, setChatbotRating] = useState(3)
+
+  const [open, setOpen] = useState(false)
+  const [searchResults, setSearchResults] = useState<Feedback[]>([])
+  const [searchValue, setSearchValue] = useState("")
+
+  // Load feedback for search
+  useEffect(() => {
+    const loadFeedback = async () => {
+      const feedback = await getAllFeedback()
+      setSearchResults(feedback)
+    }
+    loadFeedback()
+  }, [])
+
+  // Filter feedback based on search
+  const filteredFeedback = searchResults.filter((feedback) =>
+    feedback.serial_number.toLowerCase().includes(searchValue.toLowerCase()) ||
+    feedback.defect_description.toLowerCase().includes(searchValue.toLowerCase())
+  )
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -302,13 +325,55 @@ export function FeedbackForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="parentSerialNumber">Parent Serial Number (if this is a refix or related issue)</Label>
-                <Input
-                  id="parentSerialNumber"
-                  placeholder="e.g. BUG-001 (optional)"
-                  value={parentSerialNumber}
-                  onChange={(e) => setParentSerialNumber(e.target.value)}
-                />
+                <Label>Parent Serial Number (if this is a refix or related issue)</Label>
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      className="w-full justify-between"
+                    >
+                      {parentSerialNumber || "Search for parent feedback..."}
+                      <LucideChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search feedback by serial number or description..."
+                        value={searchValue}
+                        onValueChange={setSearchValue}
+                      />
+                      <CommandEmpty>No feedback found.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredFeedback.map((feedback) => (
+                          <CommandItem
+                            key={feedback.id}
+                            value={feedback.serial_number}
+                            onSelect={(currentValue) => {
+                              setParentSerialNumber(currentValue)
+                              setOpen(false)
+                            }}
+                          >
+                            <LucideCheck
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                parentSerialNumber === feedback.serial_number ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-medium">{feedback.serial_number}</span>
+                              <span className="text-sm text-muted-foreground line-clamp-1">
+                                {feedback.defect_description}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
